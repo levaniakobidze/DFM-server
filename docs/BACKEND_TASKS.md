@@ -22,14 +22,14 @@
 - [x] Add migration files
 - [x] Seed basic mock categories or initial data if needed
 
-## Phase 3 — Dares API
-- [ ] Create dare model logic
-- [ ] Build create dare endpoint
-- [ ] Build get dare feed endpoint
-- [ ] Build get single dare endpoint
-- [ ] Add filtering and sorting support
-- [ ] Add validation for dare creation
-- [ ] Add safe status flow for dares
+## Phase 3 — Dares API ✅
+- [x] Create dare model logic
+- [x] Build create dare endpoint
+- [x] Build get dare feed endpoint
+- [x] Build get single dare endpoint
+- [x] Add filtering and sorting support
+- [x] Add validation for dare creation
+- [x] Add safe status flow for dares
 
 ## Phase 4 — Accept Dare Flow
 - [ ] Build accept dare endpoint
