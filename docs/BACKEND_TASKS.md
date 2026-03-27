@@ -15,12 +15,12 @@
 - [x] Add request validation structure
 - [x] Add basic response helper pattern
 
-## Phase 2 — Database Schema Design
-- [ ] Define core Prisma models
-- [ ] Add enums for statuses and categories where appropriate
-- [ ] Add timestamps to core entities
-- [ ] Add migration files
-- [ ] Seed basic mock categories or initial data if needed
+## Phase 2 — Database Schema Design ✅
+- [x] Define core Prisma models
+- [x] Add enums for statuses and categories where appropriate
+- [x] Add timestamps to core entities
+- [x] Add migration files
+- [x] Seed basic mock categories or initial data if needed
 
 ## Phase 3 — Dares API
 - [ ] Create dare model logic

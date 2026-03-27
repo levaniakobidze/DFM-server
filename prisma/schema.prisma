@@ -7,8 +7,182 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─────────────────────────────────────────────
-// Schema is intentionally empty at this stage.
-// Models will be added in Phase 2 (Database Schema Design).
-// See: server/docs/BACKEND_TASKS.md
-// ─────────────────────────────────────────────
+// ══════════════════════════════════════════════
+// ENUMS
+// ══════════════════════════════════════════════
+
+enum DareStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum DareCategory {
+  FUNNY
+  FITNESS
+  CREATIVE
+  SOCIAL
+  FOOD
+  OUTDOOR
+  CHALLENGE
+  OTHER
+}
+
+enum ProofType {
+  PHOTO
+  VIDEO
+  TEXT
+}
+
+enum AcceptanceStatus {
+  ACCEPTED
+  CANCELLED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReportTargetType {
+  DARE
+  SUBMISSION
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+}
+
+enum TransactionType {
+  REWARD_PENDING
+  REWARD_RELEASED
+  REWARD_REVERSED
+  WITHDRAWAL
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// ══════════════════════════════════════════════
+// MODELS
+// ══════════════════════════════════════════════
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile      Profile?
+  dares        Dare[]
+  acceptances  DareAcceptance[]
+  submissions  Submission[]
+  reports      Report[]
+  transactions Transaction[]
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  displayName String?
+  bio         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Dare {
+  id           String       @id @default(uuid())
+  creatorId    String
+  title        String
+  description  String
+  category     DareCategory @default(OTHER)
+  rewardAmount Decimal      @db.Decimal(10, 2)
+  proofType    ProofType    @default(PHOTO)
+  status       DareStatus   @default(DRAFT)
+  expiresAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  creator      User             @relation(fields: [creatorId], references: [id])
+  acceptances  DareAcceptance[]
+  submissions  Submission[]
+  transactions Transaction[]
+}
+
+model DareAcceptance {
+  id        String           @id @default(uuid())
+  dareId    String
+  userId    String
+  status    AcceptanceStatus @default(ACCEPTED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  dare        Dare         @relation(fields: [dareId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  submissions Submission[]
+
+  // A user can only accept a given dare once
+  @@unique([dareId, userId])
+}
+
+model Submission {
+  id           String           @id @default(uuid())
+  dareId       String
+  acceptanceId String
+  userId       String
+  proofUrl     String?
+  proofType    ProofType        @default(PHOTO)
+  note         String?
+  status       SubmissionStatus @default(PENDING)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  dare         Dare           @relation(fields: [dareId], references: [id])
+  acceptance   DareAcceptance @relation(fields: [acceptanceId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+}
+
+model Report {
+  id         String           @id @default(uuid())
+  reporterId String
+  targetType ReportTargetType
+  targetId   String
+  reason     String
+  status     ReportStatus     @default(OPEN)
+  createdAt  DateTime         @default(now())
+
+  reporter User @relation(fields: [reporterId], references: [id])
+}
+
+model Transaction {
+  id                  String            @id @default(uuid())
+  userId              String
+  type                TransactionType
+  amount              Decimal           @db.Decimal(10, 2)
+  status              TransactionStatus @default(PENDING)
+  relatedDareId       String?
+  relatedSubmissionId String?
+  createdAt           DateTime          @default(now())
+
+  user       User        @relation(fields: [userId], references: [id])
+  dare       Dare?       @relation(fields: [relatedDareId], references: [id])
+  submission Submission? @relation(fields: [relatedSubmissionId], references: [id])
+}
