@@ -2,6 +2,7 @@ const { Router } = require('express');
 const submissionController = require('../controllers/submission.controller');
 const { createSubmissionRules, listSubmissionsRules, submissionIdParamRules, updateSubmissionStatusRules } = require('../validations/submission.validation');
 const validate = require('../validations/validate');
+const { requireAuth } = require('../middlewares/auth');
 
 const router = Router();
 
@@ -11,10 +12,10 @@ router.get('/', listSubmissionsRules, validate, submissionController.listSubmiss
 // GET /api/submissions/:id — single submission details
 router.get('/:id', submissionIdParamRules, validate, submissionController.getSubmissionById);
 
-// POST /api/submissions — create a new submission
-router.post('/', createSubmissionRules, validate, submissionController.createSubmission);
+// POST /api/submissions — create a new submission (auth required)
+router.post('/', requireAuth, createSubmissionRules, validate, submissionController.createSubmission);
 
-// PATCH /api/submissions/:id/status — approve or reject a submission (safe transitions only)
-router.patch('/:id/status', updateSubmissionStatusRules, validate, submissionController.updateSubmissionStatus);
+// PATCH /api/submissions/:id/status — approve or reject a submission (auth required)
+router.patch('/:id/status', requireAuth, updateSubmissionStatusRules, validate, submissionController.updateSubmissionStatus);
 
 module.exports = router;

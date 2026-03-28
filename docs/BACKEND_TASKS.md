@@ -62,23 +62,23 @@
 - [x] Add transaction history endpoint
 - [x] Add pending vs available balance logic foundation
 
-## Phase 8 — Authentication (Supabase + Google)
-- [ ] Setup Supabase Auth in project
-- [ ] Enable Google OAuth provider in Supabase dashboard
-- [ ] Configure redirect URLs
-- [ ] Integrate Supabase Auth in frontend (login/logout)
-- [ ] Handle session persistence in frontend
-- [ ] Extract user session in backend from requests
-- [ ] Create auth middleware in Express
-- [ ] Attach current user to request (req.user)
-- [ ] Protect routes (create dare, accept dare, submission, etc.)
-- [ ] Create user profile on first login (sync Supabase user → DB)
-- [ ] Handle unauthorized access responses — Storage Preparation
-- [ ] Plan proof upload flow
-- [ ] Add upload metadata support
-- [ ] Add Supabase Storage integration preparation
-- [ ] Define file validation rules
-- [ ] Prepare secure upload flow design
+## Phase 8 — Authentication (Supabase + Google) ✅
+- [x] Setup Supabase Auth in project
+- [ ] Enable Google OAuth provider in Supabase dashboard (Supabase dashboard — manual step)
+- [ ] Configure redirect URLs (Supabase dashboard — manual step)
+- [ ] Integrate Supabase Auth in frontend (login/logout) (frontend — Phase 8 frontend)
+- [ ] Handle session persistence in frontend (frontend — Phase 8 frontend)
+- [x] Extract user session in backend from requests
+- [x] Create auth middleware in Express
+- [x] Attach current user to request (req.user)
+- [x] Protect routes (create dare, accept dare, submission, etc.)
+- [x] Create user profile on first login (sync Supabase user → DB)
+- [x] Handle unauthorized access responses
+- [x] Plan proof upload flow
+- [x] Add upload metadata support
+- [x] Add Supabase Storage integration preparation
+- [x] Define file validation rules
+- [x] Prepare secure upload flow design
 
 ## Phase 10 — API Quality & Security
 - [ ] Add rate limiting
