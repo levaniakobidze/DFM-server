@@ -61,6 +61,12 @@ function requireAuth(req, res, next) {
   if (!req.user) {
     return sendError(res, 'Authentication required', 401);
   }
+  if (req.user.status === 'BLOCKED') {
+    return sendError(res, 'Your account has been blocked. Please contact support.', 403);
+  }
+  if (req.user.status === 'PAUSED') {
+    return sendError(res, 'Your account is currently paused. Please contact support.', 403);
+  }
   next();
 }
 

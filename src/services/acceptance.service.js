@@ -1,5 +1,6 @@
 const prisma = require('../prisma/client');
 const { ACCEPTANCE_STATUS_TRANSITIONS } = require('../constants/acceptance.constants');
+const { createNotification } = require('./notification.service');
 
 async function acceptDare(dareId, userId) {
   // Dare must exist and be ACTIVE
@@ -44,6 +45,14 @@ async function acceptDare(dareId, userId) {
       user: { select: { id: true, username: true, avatarUrl: true } },
     },
   });
+
+  // Notify the dare creator
+  createNotification(
+    dare.creatorId,
+    'DARE_ACCEPTED',
+    `${acceptance.user.username} accepted your dare "${dare.title}"`,
+    dare.id,
+  );
 
   return acceptance;
 }
