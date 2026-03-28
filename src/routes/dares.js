@@ -1,6 +1,8 @@
 const { Router } = require('express');
 const dareController = require('../controllers/dare.controller');
+const acceptanceController = require('../controllers/acceptance.controller');
 const { createDareRules, getDareFeedRules, dareIdParamRules } = require('../validations/dare.validation');
+const { acceptDareRules } = require('../validations/acceptance.validation');
 const validate = require('../validations/validate');
 
 const router = Router();
@@ -16,5 +18,11 @@ router.post('/', createDareRules, validate, dareController.createDare);
 
 // PATCH /api/dares/:id/status — update dare status (safe transitions only)
 router.patch('/:id/status', dareIdParamRules, validate, dareController.updateDareStatus);
+
+// POST /api/dares/:id/acceptances — accept a dare
+router.post('/:id/acceptances', dareIdParamRules, acceptDareRules, validate, acceptanceController.acceptDare);
+
+// GET /api/dares/:id/acceptances — list all acceptances for a dare
+router.get('/:id/acceptances', dareIdParamRules, validate, acceptanceController.getDareAcceptances);
 
 module.exports = router;

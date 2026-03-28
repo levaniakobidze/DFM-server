@@ -31,12 +31,12 @@
 - [x] Add validation for dare creation
 - [x] Add safe status flow for dares
 
-## Phase 4 — Accept Dare Flow
-- [ ] Build accept dare endpoint
-- [ ] Prevent invalid accept flows
-- [ ] Add accepted dare relation logic
-- [ ] Prevent duplicate acceptance if needed
-- [ ] Define acceptance status behavior
+## Phase 4 — Accept Dare Flow ✅
+- [x] Build accept dare endpoint
+- [x] Prevent invalid accept flows
+- [x] Add accepted dare relation logic
+- [x] Prevent duplicate acceptance if needed
+- [x] Define acceptance status behavior
 
 ## Phase 5 — Submission Flow
 - [ ] Build create submission endpoint
