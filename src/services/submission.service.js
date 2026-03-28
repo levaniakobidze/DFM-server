@@ -1,5 +1,6 @@
 const prisma = require('../prisma/client');
 const {
+  SUBMISSION_STATUS_TRANSITIONS,
   SUBMISSION_DEFAULT_PAGE_SIZE,
   SUBMISSION_MAX_PAGE_SIZE,
 } = require('../constants/submission.constants');
@@ -115,4 +116,39 @@ async function listSubmissions({ userId, dareId, status, page, limit }) {
   };
 }
 
-module.exports = { createSubmission, getSubmissionById, listSubmissions };
+async function updateSubmissionStatus(id, newStatus) {
+  const submission = await prisma.submission.findUnique({
+    where: { id },
+    include: { acceptance: true },
+  });
+
+  if (!submission) return null;
+
+  const allowed = SUBMISSION_STATUS_TRANSITIONS[submission.status] || [];
+  if (!allowed.includes(newStatus)) {
+    const err = new Error(`Cannot transition submission from ${submission.status} to ${newStatus}`);
+    err.statusCode = 400;
+    throw err;
+  }
+
+  // Sync acceptance status to match the submission outcome atomically
+  const [updated] = await prisma.$transaction([
+    prisma.submission.update({
+      where: { id },
+      data: { status: newStatus },
+      include: {
+        dare: { select: { id: true, title: true, rewardAmount: true } },
+        user: { select: { id: true, username: true, avatarUrl: true } },
+        acceptance: { select: { id: true, status: true } },
+      },
+    }),
+    prisma.dareAcceptance.update({
+      where: { id: submission.acceptanceId },
+      data: { status: newStatus }, // APPROVED or REJECTED mirrors submission outcome
+    }),
+  ]);
+
+  return updated;
+}
+
+module.exports = { createSubmission, getSubmissionById, listSubmissions, updateSubmissionStatus };

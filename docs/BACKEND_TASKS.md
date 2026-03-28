@@ -46,14 +46,14 @@
 - [x] Build get submission details endpoint
 - [x] Build list my submissions endpoint
 
-## Phase 6 — Review & Moderation Foundation
-- [ ] Build approve submission endpoint
-- [ ] Build reject submission endpoint
-- [ ] Add moderation-safe status transitions
-- [ ] Add report model
-- [ ] Build report dare endpoint
-- [ ] Build report submission endpoint
-- [ ] Add basic moderation queue foundation
+## Phase 6 — Review & Moderation Foundation ✅
+- [x] Build approve submission endpoint
+- [x] Build reject submission endpoint
+- [x] Add moderation-safe status transitions
+- [x] Add report model
+- [x] Build report dare endpoint
+- [x] Build report submission endpoint
+- [x] Add basic moderation queue foundation
 
 ## Phase 7 — Wallet Foundation
 - [ ] Design balance-related models

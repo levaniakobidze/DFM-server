@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const submissionController = require('../controllers/submission.controller');
-const { createSubmissionRules, listSubmissionsRules, submissionIdParamRules } = require('../validations/submission.validation');
+const { createSubmissionRules, listSubmissionsRules, submissionIdParamRules, updateSubmissionStatusRules } = require('../validations/submission.validation');
 const validate = require('../validations/validate');
 
 const router = Router();
@@ -13,5 +13,8 @@ router.get('/:id', submissionIdParamRules, validate, submissionController.getSub
 
 // POST /api/submissions — create a new submission
 router.post('/', createSubmissionRules, validate, submissionController.createSubmission);
+
+// PATCH /api/submissions/:id/status — approve or reject a submission (safe transitions only)
+router.patch('/:id/status', updateSubmissionStatusRules, validate, submissionController.updateSubmissionStatus);
 
 module.exports = router;

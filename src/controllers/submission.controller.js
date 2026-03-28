@@ -31,4 +31,16 @@ async function listSubmissions(req, res, next) {
   }
 }
 
-module.exports = { createSubmission, getSubmissionById, listSubmissions };
+async function updateSubmissionStatus(req, res, next) {
+  try {
+    const submission = await submissionService.updateSubmissionStatus(req.params.id, req.body.status);
+    if (!submission) {
+      return sendError(res, 'Submission not found', 404);
+    }
+    return sendSuccess(res, 'Submission status updated', submission);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createSubmission, getSubmissionById, listSubmissions, updateSubmissionStatus };

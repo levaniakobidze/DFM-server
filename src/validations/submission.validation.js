@@ -53,4 +53,13 @@ const submissionIdParamRules = [
     .isUUID().withMessage('Submission ID must be a valid UUID'),
 ];
 
-module.exports = { createSubmissionRules, listSubmissionsRules, submissionIdParamRules };
+const updateSubmissionStatusRules = [
+  param('id')
+    .isUUID().withMessage('Submission ID must be a valid UUID'),
+
+  body('status')
+    .notEmpty().withMessage('status is required')
+    .isIn(VALID_SUBMISSION_STATUSES).withMessage(`Status must be one of: ${VALID_SUBMISSION_STATUSES.join(', ')}`),
+];
+
+module.exports = { createSubmissionRules, listSubmissionsRules, submissionIdParamRules, updateSubmissionStatusRules };
