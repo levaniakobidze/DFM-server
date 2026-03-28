@@ -9,7 +9,7 @@ async function getMyProfile(userId) {
   });
   if (!user) return null;
 
-  const [daresCreated, approvedSubmissions, earnings] = await Promise.all([
+  const [daresCreated, approvedSubmissions, earnings, totalSubmissions] = await Promise.all([
     prisma.dare.count({ where: { creatorId: userId } }),
     prisma.submission.count({ where: { userId, status: 'APPROVED' } }),
     prisma.transaction.aggregate({
@@ -18,8 +18,6 @@ async function getMyProfile(userId) {
     }),
     prisma.submission.count({ where: { userId } }),
   ]);
-
-  const totalSubmissions = await prisma.submission.count({ where: { userId } });
   const successRate = totalSubmissions > 0
     ? Math.round((approvedSubmissions / totalSubmissions) * 100)
     : 0;
@@ -72,10 +70,30 @@ async function getMyDares(userId, { page = 1 } = {}) {
   return { dares, pagination: { total, page: pageNum, limit: PAGE_SIZE, totalPages: Math.ceil(total / PAGE_SIZE) } };
 }
 
-async function getMyAcceptances(userId, { page = 1, status } = {}) {
+/** Align DareAcceptance.status with terminal Submission.status (fixes legacy admin-only updates). */
+async function syncAcceptanceStatusWithSubmissions(userId) {
+  const subs = await prisma.submission.findMany({
+    where: { userId, status: { in: ['APPROVED', 'REJECTED'] } },
+    select: { status: true, acceptanceId: true },
+  });
+  for (const s of subs) {
+    await prisma.dareAcceptance.updateMany({
+      where: { id: s.acceptanceId, status: { not: s.status } },
+      data: { status: s.status },
+    });
+  }
+}
+
+async function getMyAcceptances(userId, { page = 1, status, dareId } = {}) {
+  await syncAcceptanceStatusWithSubmissions(userId);
+
   const pageNum = parseInt(page);
   const skip = (pageNum - 1) * PAGE_SIZE;
-  const where = { userId, ...(status ? { status } : {}) };
+  const where = {
+    userId,
+    ...(status ? { status } : {}),
+    ...(dareId ? { dareId } : {}),
+  };
 
   const [acceptances, total] = await Promise.all([
     prisma.dareAcceptance.findMany({

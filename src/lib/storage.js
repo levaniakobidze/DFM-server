@@ -2,9 +2,16 @@ const supabase = require('./supabase');
 
 const BUCKET = process.env.SUPABASE_STORAGE_BUCKET;
 
-// Allowed MIME types and max file size for proof uploads
+// Allowed MIME types for proof uploads
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
-const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
+
+const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const VIDEO_MIME_TYPES = ['video/mp4', 'video/quicktime'];
+
+const MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;   // 20 MB
+const MAX_VIDEO_SIZE_BYTES = 500 * 1024 * 1024;  // 500 MB
+// Used by the generic size validator — equals the largest allowed limit
+const MAX_FILE_SIZE_BYTES = MAX_VIDEO_SIZE_BYTES;
 
 /**
  * Creates a signed upload URL for a proof file.
@@ -35,4 +42,13 @@ function getPublicUrl(path) {
   return data.publicUrl;
 }
 
-module.exports = { createSignedUploadUrl, getPublicUrl, ALLOWED_MIME_TYPES, MAX_FILE_SIZE_BYTES };
+module.exports = {
+  createSignedUploadUrl,
+  getPublicUrl,
+  ALLOWED_MIME_TYPES,
+  IMAGE_MIME_TYPES,
+  VIDEO_MIME_TYPES,
+  MAX_IMAGE_SIZE_BYTES,
+  MAX_VIDEO_SIZE_BYTES,
+  MAX_FILE_SIZE_BYTES,
+};

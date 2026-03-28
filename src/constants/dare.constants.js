@@ -2,7 +2,7 @@
 // Key = current status, Value = statuses it can move to.
 const DARE_STATUS_TRANSITIONS = {
   DRAFT: ['ACTIVE', 'CANCELLED'],
-  ACTIVE: ['CLOSED', 'CANCELLED'],
+  ACTIVE: ['CLOSED', 'CANCELLED', 'COMPLETED'],
   CLOSED: ['COMPLETED', 'REJECTED'],
   COMPLETED: [],
   REJECTED: [],

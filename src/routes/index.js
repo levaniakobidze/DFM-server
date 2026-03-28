@@ -9,6 +9,7 @@ const uploadsRouter = require('./uploads');
 const adminRouter = require('./admin');
 const notificationsRouter = require('./notifications');
 const usersRouter = require('./users');
+const paymentsRouter = require('./payments');
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/uploads', uploadsRouter);
 router.use('/admin', adminRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/users', usersRouter);
+router.use('/payments', paymentsRouter);
 
 module.exports = router;

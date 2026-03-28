@@ -80,6 +80,13 @@
 - [x] Define file validation rules
 - [x] Prepare secure upload flow design
 
+## Phase 9 — Storage Preparation ✅
+- [x] Plan proof upload flow
+- [x] Add upload metadata support
+- [x] Add Supabase Storage integration preparation
+- [x] Define file validation rules
+- [x] Prepare secure upload flow design
+
 ## Phase 10 — API Quality & Security
 - [ ] Add rate limiting
 - [ ] Add helmet / basic security middleware

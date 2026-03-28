@@ -83,6 +83,13 @@ enum UserStatus {
   BLOCKED
 }
 
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
 enum NotificationType {
   DARE_ACCEPTED
   SUBMISSION_APPROVED
@@ -113,6 +120,8 @@ model User {
   reports       Report[]
   transactions  Transaction[]
   notifications Notification[]
+  payments      Payment[]
+  payoutDetail  PayoutDetail?
 }
 
 model Profile {
@@ -122,6 +131,40 @@ model Profile {
   bio         String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                  String        @id @default(uuid())
+  userId              String
+  dareId              String?
+  paddleTransactionId String        @unique
+  paddleCustomerId    String?
+  amount              Decimal       @db.Decimal(10, 2)
+  currency            String        @default("USD")
+  status              PaymentStatus @default(PENDING)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  user User  @relation(fields: [userId], references: [id])
+  dare Dare? @relation(fields: [dareId], references: [id])
+
+  @@index([userId])
+  @@index([dareId])
+  @@index([paddleTransactionId])
+}
+
+// Foundation only — payout to winners is not live yet.
+// Stores the user's preferred payout method for future implementation.
+model PayoutDetail {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  method    String?  // e.g. "bank_transfer", "paypal", "wise"
+  details   Json?    // in production: encrypt before storing
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -143,6 +186,7 @@ model Dare {
   acceptances  DareAcceptance[]
   submissions  Submission[]
   transactions Transaction[]
+  payments     Payment[]
 }
 
 model DareAcceptance {

@@ -1,5 +1,6 @@
 const prisma = require('../prisma/client');
 const { createNotification } = require('./notification.service');
+const submissionService = require('./submission.service');
 
 const ADMIN_PAGE_SIZE = 20;
 const ADMIN_EMAIL = 'levaniakobidze25@gmail.com';
@@ -216,26 +217,42 @@ async function listRequests({ page = 1, limit = ADMIN_PAGE_SIZE, method = '', st
 // ── Mutations ──────────────────────────────────────────────────────────────
 
 async function updateSubmissionStatus(id, status) {
-  const sub = await prisma.submission.findUnique({ where: { id } });
-  if (!sub) return null;
-
-  const updated = await prisma.submission.update({
-    where: { id },
-    data: { status },
-    include: {
-      dare: { select: { id: true, title: true, rewardAmount: true } },
-      user: { select: { id: true, username: true } },
-    },
-  });
+  // Use submission service so DareAcceptance.status stays in sync with Submission.status
+  // (profile "Completed" tab lists acceptances with status APPROVED; stats count approved submissions).
+  const updated = await submissionService.updateSubmissionStatus(id, status);
+  if (!updated) return null;
 
   if (status === 'APPROVED') {
+    const reward = parseFloat(updated.dare.rewardAmount || 0);
+
+    // Release the reward to the winner atomically:
+    // 1. Mark any REWARD_PENDING transaction for this dare as COMPLETED (funds are no longer locked)
+    // 2. Create a REWARD_RELEASED transaction on the winner's wallet so they can withdraw
+    if (reward > 0) {
+      await prisma.$transaction([
+        prisma.transaction.updateMany({
+          where: { relatedDareId: updated.dareId, type: 'REWARD_PENDING', status: 'PENDING' },
+          data: { status: 'COMPLETED' },
+        }),
+        prisma.transaction.create({
+          data: {
+            userId: updated.userId,
+            type: 'REWARD_RELEASED',
+            amount: updated.dare.rewardAmount,
+            status: 'COMPLETED',
+            relatedDareId: updated.dareId,
+            relatedSubmissionId: updated.id,
+          },
+        }),
+      ]);
+    }
+
     createNotification(
       updated.userId,
       'SUBMISSION_APPROVED',
       `Your proof for "${updated.dare.title}" was approved!`,
       updated.dareId,
     );
-    const reward = parseFloat(updated.dare.rewardAmount || 0);
     if (reward > 0) {
       createNotification(
         updated.userId,

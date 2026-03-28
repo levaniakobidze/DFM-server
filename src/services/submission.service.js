@@ -131,8 +131,8 @@ async function updateSubmissionStatus(id, newStatus) {
     throw err;
   }
 
-  // Sync acceptance status to match the submission outcome atomically
-  const [updated] = await prisma.$transaction([
+  // Sync acceptance status and optionally close the dare atomically
+  const ops = [
     prisma.submission.update({
       where: { id },
       data: { status: newStatus },
@@ -144,10 +144,21 @@ async function updateSubmissionStatus(id, newStatus) {
     }),
     prisma.dareAcceptance.update({
       where: { id: submission.acceptanceId },
-      data: { status: newStatus }, // APPROVED or REJECTED mirrors submission outcome
+      data: { status: newStatus },
     }),
-  ]);
+  ];
 
+  // Approving a submission completes the dare — no further acceptances allowed
+  if (newStatus === 'APPROVED') {
+    ops.push(
+      prisma.dare.update({
+        where: { id: submission.dareId },
+        data: { status: 'COMPLETED' },
+      })
+    );
+  }
+
+  const [updated] = await prisma.$transaction(ops);
   return updated;
 }
 

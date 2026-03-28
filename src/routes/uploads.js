@@ -1,9 +1,18 @@
 const { Router } = require('express');
-const { body, param } = require('express-validator');
+const { body } = require('express-validator');
 const validate = require('../validations/validate');
-const { requireAuth } = require('../middlewares/auth');
-const { createSignedUploadUrl, getPublicUrl, ALLOWED_MIME_TYPES, MAX_FILE_SIZE_BYTES } = require('../lib/storage');
+const { attachUser, requireAuth } = require('../middlewares/auth');
+const {
+  createSignedUploadUrl,
+  getPublicUrl,
+  ALLOWED_MIME_TYPES,
+  IMAGE_MIME_TYPES,
+  MAX_IMAGE_SIZE_BYTES,
+  MAX_VIDEO_SIZE_BYTES,
+  MAX_FILE_SIZE_BYTES,
+} = require('../lib/storage');
 const { sendSuccess, sendError } = require('../utils/response');
+const prisma = require('../prisma/client');
 
 const router = Router();
 
@@ -12,15 +21,19 @@ const router = Router();
  * Returns a short-lived signed upload URL so the client can PUT the file
  * directly to Supabase Storage without routing binary data through this server.
  *
- * Body: { submissionId, filename, mimeType, size }
+ * Body: { acceptanceId, filename, mimeType, size }
+ *
+ * Security: verifies the authenticated user owns the acceptance before
+ * issuing a signed URL.
  */
 router.post(
   '/proof-url',
+  attachUser,
   requireAuth,
   [
-    body('submissionId')
-      .notEmpty().withMessage('submissionId is required')
-      .isUUID().withMessage('submissionId must be a valid UUID'),
+    body('acceptanceId')
+      .notEmpty().withMessage('acceptanceId is required')
+      .isUUID().withMessage('acceptanceId must be a valid UUID'),
 
     body('filename')
       .notEmpty().withMessage('filename is required')
@@ -34,9 +47,12 @@ router.post(
     body('size')
       .notEmpty().withMessage('size is required')
       .isInt({ min: 1 }).withMessage('size must be a positive integer')
-      .custom((value) => {
-        if (parseInt(value) > MAX_FILE_SIZE_BYTES) {
-          throw new Error(`File size must not exceed ${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB`);
+      .custom((value, { req }) => {
+        const bytes = parseInt(value);
+        const isImage = IMAGE_MIME_TYPES.includes(req.body?.mimeType);
+        const limit = isImage ? MAX_IMAGE_SIZE_BYTES : MAX_VIDEO_SIZE_BYTES;
+        if (bytes > limit) {
+          throw new Error(`File size must not exceed ${limit / (1024 * 1024)} MB for ${isImage ? 'images' : 'videos'}`);
         }
         return true;
       }),
@@ -44,9 +60,27 @@ router.post(
   validate,
   async (req, res, next) => {
     try {
-      const { submissionId, filename } = req.body;
+      const { acceptanceId, filename } = req.body;
+
+      // Verify the acceptance exists and belongs to the authenticated user
+      const acceptance = await prisma.dareAcceptance.findUnique({
+        where: { id: acceptanceId },
+      });
+
+      if (!acceptance) {
+        return sendError(res, 'Acceptance not found', 404);
+      }
+
+      if (acceptance.userId !== req.user.id) {
+        return sendError(res, 'You can only upload proof for your own accepted dares', 403);
+      }
+
+      if (!['ACCEPTED', 'SUBMITTED'].includes(acceptance.status)) {
+        return sendError(res, `Cannot upload proof for an acceptance with status ${acceptance.status}`, 400);
+      }
+
       const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const storagePath = `proofs/${submissionId}/${Date.now()}_${safeName}`;
+      const storagePath = `proofs/${acceptanceId}/${Date.now()}_${safeName}`;
 
       const uploadData = await createSignedUploadUrl(storagePath);
       const publicUrl = getPublicUrl(storagePath);

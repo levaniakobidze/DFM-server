@@ -17,7 +17,7 @@ async function createDare(data) {
       category: category || 'OTHER',
       rewardAmount,
       proofType: proofType || 'PHOTO',
-      status: 'ACTIVE',
+      status: 'DRAFT',
       expiresAt: expiresAt ? new Date(expiresAt) : null,
     },
     include: {
@@ -34,8 +34,12 @@ async function getDareFeed({ status, category, sort, page, limit }) {
   const skip = (pageNum - 1) * pageSize;
 
   const where = {};
-  if (status) where.status = status;
-  else where.status = 'ACTIVE'; // default to active dares only
+  if (status) {
+    where.status = status;
+  } else {
+    // Show active and completed dares on the feed by default
+    where.status = { in: ['ACTIVE', 'COMPLETED'] };
+  }
   if (category) where.category = category;
 
   const orderBy = DARE_SORT_FIELDS[sort] || DARE_SORT_FIELDS.newest;
@@ -71,10 +75,26 @@ async function getDareById(id) {
     include: {
       creator: { select: { id: true, username: true, avatarUrl: true } },
       _count: { select: { acceptances: true, submissions: true } },
+      submissions: {
+        where: { status: 'APPROVED' },
+        take: 1,
+        select: {
+          id: true,
+          proofUrl: true,
+          proofType: true,
+          user: { select: { id: true, username: true, avatarUrl: true } },
+        },
+      },
     },
   });
 
-  return dare;
+  if (!dare) return null;
+
+  return {
+    ...dare,
+    approvedProof: dare.submissions[0] ?? null,
+    submissions: undefined,
+  };
 }
 
 async function updateDareStatus(id, newStatus) {
