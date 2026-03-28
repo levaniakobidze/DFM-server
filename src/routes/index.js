@@ -4,6 +4,7 @@ const daresRouter = require('./dares');
 const acceptancesRouter = require('./acceptances');
 const submissionsRouter = require('./submissions');
 const reportsRouter = require('./reports');
+const walletRouter = require('./wallet');
 
 const router = Router();
 
@@ -12,9 +13,9 @@ router.use('/dares', daresRouter);
 router.use('/acceptances', acceptancesRouter);
 router.use('/submissions', submissionsRouter);
 router.use('/reports', reportsRouter);
+router.use('/wallet', walletRouter);
 
 // Future routes will be added here:
 // router.use('/users', usersRouter);
-// router.use('/wallet', walletRouter);
 
 module.exports = router;

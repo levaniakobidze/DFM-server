@@ -55,12 +55,12 @@
 - [x] Build report submission endpoint
 - [x] Add basic moderation queue foundation
 
-## Phase 7 — Wallet Foundation
-- [ ] Design balance-related models
-- [ ] Add transaction model
-- [ ] Add wallet summary endpoint
-- [ ] Add transaction history endpoint
-- [ ] Add pending vs available balance logic foundation
+## Phase 7 — Wallet Foundation ✅
+- [x] Design balance-related models
+- [x] Add transaction model
+- [x] Add wallet summary endpoint
+- [x] Add transaction history endpoint
+- [x] Add pending vs available balance logic foundation
 
 ## Phase 8 — Authentication (Supabase + Google)
 - [ ] Setup Supabase Auth in project
