@@ -38,13 +38,13 @@
 - [x] Prevent duplicate acceptance if needed
 - [x] Define acceptance status behavior
 
-## Phase 5 — Submission Flow
-- [ ] Build create submission endpoint
-- [ ] Define submission statuses
-- [ ] Add proof metadata support
-- [ ] Add validation for submission creation
-- [ ] Build get submission details endpoint
-- [ ] Build list my submissions endpoint
+## Phase 5 — Submission Flow ✅
+- [x] Build create submission endpoint
+- [x] Define submission statuses
+- [x] Add proof metadata support
+- [x] Add validation for submission creation
+- [x] Build get submission details endpoint
+- [x] Build list my submissions endpoint
 
 ## Phase 6 — Review & Moderation Foundation
 - [ ] Build approve submission endpoint
