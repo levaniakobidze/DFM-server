@@ -24,30 +24,25 @@ async function attachUser(req, res, next) {
   }
 
   const supabaseUser = data.user;
+  const email = supabaseUser.email;
+  const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
+  const username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
+  const displayName = supabaseUser.user_metadata?.full_name || username;
 
-  // Sync Supabase user → DB on first login
-  let dbUser = await prisma.user.findUnique({ where: { id: supabaseUser.id } });
-
-  if (!dbUser) {
-    const email = supabaseUser.email;
-    const username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_');
-
-    dbUser = await prisma.user.upsert({
-      where: { id: supabaseUser.id },
-      update: {},
-      create: {
-        id: supabaseUser.id,
-        email,
-        username,
-        profile: {
-          create: {
-            displayName: supabaseUser.user_metadata?.full_name || username,
-            bio: null,
-          },
-        },
+  // Upsert: create on first login, update avatarUrl on every login so it stays fresh
+  const dbUser = await prisma.user.upsert({
+    where: { id: supabaseUser.id },
+    update: { avatarUrl },
+    create: {
+      id: supabaseUser.id,
+      email,
+      username,
+      avatarUrl,
+      profile: {
+        create: { displayName, bio: null },
       },
-    });
-  }
+    },
+  });
 
   req.user = dbUser;
   next();
