@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient() ;
 
 /** Stable ID for local dev — must match app `.env` NEXT_PUBLIC_DEV_CREATOR_ID */
 const DEV_SEED_USER_ID = 'a1111111-1111-4111-8111-111111111111';
